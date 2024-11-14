@@ -1,0 +1,127 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+.setup-bar {
+  width: 250px;
+  background-color: #242734;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  font-weight: 800;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.algorithms,
+.center-buttons,
+.right-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+select {
+  padding: 0.5rem;
+  border-radius: 0.85rem;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Arrow styling */
+.select-wrapper::after {
+  content: "▼";
+  font-size: 0.8rem;
+  color: black;
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+
+.select-wrapper.open::after {
+  transform: translateY(-50%) rotate(0deg);
+}
+
+.center-buttons input[type="number"] {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #c0c0c0;
+  text-align: center;
+}
+
+.action-btn,
+.play-btn,
+.stop-btn {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.play-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.stop-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.action-btn {
+  background-color: #f2f2f2;
+  color: #5a5a5a;
+  border: 1px solid #c0c0c0;
+}
+
+.action-btn:hover,
+.play-btn:hover,
+.stop-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.playground {
+  flex: 1;
+  background: #573ef9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+#celdainicio-btn.active-mode{
+  background: blue;
+  color: white;
+}
+
+#celdafin-btn.active-mode{
+  background: red;
+  color: white;
+}
+
+#obstaculo-btn.active-mode{
+  background: black;
+  color: white;
+}
