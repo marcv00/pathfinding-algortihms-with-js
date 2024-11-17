@@ -1,4 +1,5 @@
 import bfs from "./bfs.js";
+import dStar from "./dStar.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     // Variables del DOM necesarias
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const obstaculoBtn = document.getElementById("obstaculo-btn");
     const playBtn = document.getElementById("play-btn");
     const stopBtn = document.getElementById("stop-btn");
+    const algorithmSelect = document.getElementById("selected-algorithm");
 
     if (!canvas || !gridSizeInput || !startCellBtn || !endCellBtn || !obstaculoBtn || !playBtn || !stopBtn) {
         console.error("Required elements not found");
@@ -31,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let endCellPosition = null;
     let previousCell = null;
     let isMouseDown = false;
+    let currentAlgorithm = bfs; // Default algorithm is BFS
 
     // Clase que representa una celda en el grid
     class Cell {
@@ -53,11 +56,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    class DStarCell extends Cell {
+        constructor(row, col) {
+            super(row, col);
+            this.hCost = 0;  // Heuristic cost (for A* or D*)
+            this.gCost = Infinity;  // Cost from the start cell, initially infinity (unreachable)
+            this.fCost = Infinity;  // Total cost (f = g + h), initially infinity
+            this.parent = null;  // To track the previous cell in the path
+        }
+    
+        // Method to calculate and set the heuristic (e.g., Euclidean or Manhattan)
+        calculateHeuristic(endCell) {
+            const dx = this.row - endCell.row;
+            const dy = this.col - endCell.col;
+            return Math.sqrt(dx * dx + dy * dy); // Euclidean distance
+            // Or for Manhattan distance: return Math.abs(dx) + Math.abs(dy);
+        }
+    
+        // Method to set the costs (gCost, hCost) and calculate fCost
+        setCosts(gCost, endCell) {
+            this.gCost = gCost; // Cost from start
+            this.hCost = this.calculateHeuristic(endCell); // Heuristic from current cell to end
+            this.fCost = this.gCost + this.hCost; // Total cost (f = g + h)
+        }
+    }
+    
+
     const initializeGrid = () => {
-        // Genera y limpia el grid
+        // Get the selected algorithm from the dropdown
+        const selectedAlgorithm = document.getElementById("selected-algorithm").value;
+    
+        // Decide which cell class to use based on the selected algorithm
+        const cellClass = selectedAlgorithm === "d*" ? DStarCell : Cell;
+    
+        // Generate the grid with the correct cell type
         cells = Array.from({ length: gridSize }, (_, row) =>
-            Array.from({ length: gridSize }, (_, col) => new Cell(row + 1, col + 1))
+            Array.from({ length: gridSize }, (_, col) => new cellClass(row + 1, col + 1))
         ).flat();
+    
         startCellPosition = endCellPosition = null;
         drawGrid();
     };
@@ -96,6 +132,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeMode === mode) button.classList.add("active-mode");
     };
 
+    const handleAlgorithmChange = () => {
+        // Check if start or end positions are set
+        if (startCellPosition || endCellPosition) {
+            const userConfirmed = confirm("¿Está seguro de que quiere cambiar de algoritmo? Los datos de las celdas se perderán.");
+            if (!userConfirmed) {
+                // Reset the algorithm selection to the previous one if the user cancels
+                algorithmSelect.value = currentAlgorithm.name;
+                return;
+            }
+        }
+
+        // Update the current selected algorithm
+        currentAlgorithm = algorithmSelect.value === "d*" ? dStar : bfs;
+
+        // Reinitialize the grid with the correct cells based on the new algorithm
+        initializeGrid();
+    };
+
     const handleCellInteraction = (event, previousCell = null) => {
         // Detecta la celda en la que el usuario hace clic y la actualiza según el modo activo
         const rect = canvas.getBoundingClientRect();
@@ -105,6 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const cell = cells.find(c => c.row === row && c.col === col);
     
         if (cell && cell !== previousCell) {
+           
             if (activeMode === CELL_MODES.START) {
                 // Actualiza la celda de inicio
                 if (startCellPosition) {
@@ -150,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Inicia el proceso de pathfinding
         isPathFindingActive = true;
         [gridSizeInput, startCellBtn, endCellBtn, obstaculoBtn].forEach(btn => btn.disabled = true);
-        bfs(cells, startCellPosition, endCellPosition, gridSize, paintCell).then(() => {
+        currentAlgorithm(cells, startCellPosition, endCellPosition, gridSize, paintCell).then(() => {
             isPathFindingActive = false;
             [gridSizeInput, startCellBtn, endCellBtn, obstaculoBtn].forEach(btn => btn.disabled = false);
         });
@@ -176,6 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.strokeRect(x, y, cellSize, cellSize);
     };
 
+    algorithmSelect.addEventListener("change", handleAlgorithmChange);
+
     canvas.addEventListener("mousedown", (event) => {
         isMouseDown = true;
         previousCell = handleCellInteraction(event, previousCell);
@@ -194,5 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initializeGrid();
 });
+
 
 
